@@ -1,0 +1,33 @@
+# Node modules
+node_modules/
+
+# Build output
+hostinger/
+dist/
+
+# Local config
+config/app.php
+.env
+
+# Storage uploads
+storage/uploads/*
+!storage/uploads/.gitkeep
+
+# Composer
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# PHP
+.phpunit.result.cache

@@ -1,0 +1,143 @@
+CREATE TABLE users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(255) DEFAULT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  free_credits_remaining INT NOT NULL DEFAULT 0,
+  paid_credits_remaining INT NOT NULL DEFAULT 0,
+  stripe_customer_id VARCHAR(255) DEFAULT NULL,
+  stripe_subscription_id VARCHAR(255) DEFAULT NULL,
+  subscription_status VARCHAR(50) DEFAULT NULL,
+  subscription_plan VARCHAR(50) DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_users_subscription (stripe_subscription_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE trial_claims (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  ip_hash CHAR(64) NOT NULL,
+  user_agent_hash CHAR(64) NOT NULL,
+  device_hash CHAR(64) NOT NULL,
+  granted_credits INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_trial_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_trial_ip (ip_hash),
+  INDEX idx_trial_device (device_hash)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE reports (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  zip_code VARCHAR(12) NOT NULL,
+  analysis_status VARCHAR(50) NOT NULL DEFAULT 'queued',
+  used_credit_type VARCHAR(20) DEFAULT NULL,
+  raw_text MEDIUMTEXT,
+  uploaded_file_path VARCHAR(255) DEFAULT NULL,
+  uploaded_original_name VARCHAR(255) DEFAULT NULL,
+  service_key VARCHAR(100) DEFAULT NULL,
+  service_label VARCHAR(255) DEFAULT NULL,
+  quoted_price DECIMAL(10,2) DEFAULT NULL,
+  fair_low DECIMAL(10,2) DEFAULT NULL,
+  fair_high DECIMAL(10,2) DEFAULT NULL,
+  overpriced_percent INT DEFAULT NULL,
+  score INT DEFAULT NULL,
+  result_json JSON DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reports_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE payments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  report_id INT UNSIGNED DEFAULT NULL,
+  stripe_session_id VARCHAR(255) NOT NULL UNIQUE,
+  amount_cents INT NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  purchase_mode VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_payments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_payments_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE pricing_reference (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category VARCHAR(50) NOT NULL,
+  service_key VARCHAR(100) NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  low_price DECIMAL(10,2) NOT NULL,
+  high_price DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_cat_service (category, service_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO pricing_reference (category, service_key, label, low_price, high_price) VALUES
+('mechanic','unknown_service','General car repair',250,650),
+('mechanic','brake_pads','Brake pad replacement',320,450),
+('mechanic','rotors','Brake pads + rotors',480,750),
+('mechanic','alternator','Alternator replacement',550,950),
+('mechanic','starter','Starter replacement',450,850),
+('mechanic','oil_change','Oil change',55,120),
+('mechanic','battery_replacement','Battery replacement',180,380),
+('mechanic','ac_recharge','AC recharge',180,420),
+('plumber','unknown_service','General plumbing repair',180,650),
+('plumber','drain_cleaning','Drain cleaning',120,350),
+('plumber','toilet_install','Toilet install',220,520),
+('plumber','faucet_replace','Faucet replacement',150,450),
+('plumber','water_heater_replace','Water heater replacement',1100,2800),
+('plumber','pipe_repair','Pipe repair',250,900),
+('electrician','unknown_service','General electrical work',180,700),
+('electrician','outlet_replace','Outlet replacement',120,260),
+('electrician','ceiling_fan_install','Ceiling fan install',180,450),
+('electrician','breaker_panel_work','Breaker or panel work',450,2200),
+('electrician','lighting_install','Lighting install',150,500),
+('hvac','unknown_service','General HVAC service',180,850),
+('hvac','ac_tuneup','AC tune-up',120,280),
+('hvac','furnace_repair','Furnace repair',280,1100),
+('hvac','thermostat_replace','Thermostat replacement',140,420),
+('hvac','capacitor_replace','Capacitor replacement',180,480),
+('hvac','duct_cleaning','Duct cleaning',300,900),
+('landscaper','unknown_service','General landscaping work',140,950),
+('landscaper','lawn_cutting','Lawn cutting',45,140),
+('landscaper','mulch_install','Mulch install',250,1200),
+('landscaper','spring_cleanup','Spring cleanup',180,700),
+('landscaper','tree_trim','Tree trimming',250,1800),
+('landscaper','sod_install','Sod install',600,2600),
+('roofer','unknown_service','General roofing work',350,1600),
+('roofer','roof_patch','Roof patch',300,1000),
+('roofer','roof_replace','Roof replacement',6500,18000),
+('roofer','gutter_repair','Gutter repair',180,700),
+('roofer','shingle_repair','Shingle repair',250,900),
+('contractor','unknown_service','General home repair',250,900),
+('contractor','interior_painting','Interior painting',400,1500),
+('contractor','drywall_patch','Drywall patch',180,450),
+('contractor','fixture_install','Fixture installation',150,550),
+('contractor','tile_repair','Tile repair',220,800),
+('contractor','general_handyman','General handyman work',160,600),
+('moving','unknown_service','General local move',400,1400),
+('moving','local_move_studio','Local studio move',350,700),
+('moving','local_move_2br','Local 2 bedroom move',700,1500),
+('moving','local_move_3br','Local 3 bedroom move',1100,2400),
+('moving','junk_removal','Junk removal',150,800),
+('appliance','unknown_service','General appliance repair',140,550),
+('appliance','dishwasher_repair','Dishwasher repair',180,450),
+('appliance','washer_repair','Washer repair',180,420),
+('appliance','dryer_repair','Dryer repair',160,400),
+('appliance','fridge_repair','Refrigerator repair',220,650),
+('pest','unknown_service','General pest control',120,420),
+('pest','general_treatment','General treatment',120,320),
+('pest','termite_treatment','Termite treatment',900,3500),
+('pest','bed_bug_treatment','Bed bug treatment',600,2600),
+('pest','rodent_control','Rodent control',180,650);
+
+
+CREATE TABLE request_events (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  action_name VARCHAR(80) NOT NULL,
+  fingerprint_hash CHAR(64) NOT NULL,
+  user_id INT UNSIGNED DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_request_action_fingerprint (action_name, fingerprint_hash, created_at),
+  INDEX idx_request_user (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

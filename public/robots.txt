@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.php
+Disallow: /checkout.php
+Disallow: /result.php
+Sitemap: /sitemap.php
