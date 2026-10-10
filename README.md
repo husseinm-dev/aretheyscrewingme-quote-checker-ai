@@ -1,5 +1,12 @@
 # AreTheyScrewingMe — AI Quote Checker
 
+![PHP](https://img.shields.io/badge/PHP-8.x-777BB4?logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-412991?logo=openai&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?logo=stripe&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-Turnstile-F38020?logo=cloudflare&logoColor=white)
+![Live](https://img.shields.io/badge/status-live-brightgreen)
+
 Ever wonder if a mechanic, plumber, or contractor quote is fair? Upload the quote and get an instant AI analysis: a fair price range, a 0–100 score, red flags, and questions to ask.
 
 **Live site:** [aretheyscrewingme.com](https://aretheyscrewingme.com)
